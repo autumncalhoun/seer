@@ -1,6 +1,6 @@
 'use client'
 
-import { Conversation } from './api/external'
+import { Conversation } from '../app/api/external'
 
 export default function ConversationList({
   conversations,

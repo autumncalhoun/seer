@@ -1,5 +1,5 @@
-import ConversationList from '@/src/conversation-list'
-import { externalApi } from '@/src/api/external'
+import ConversationList from '@/components/conversation-list'
+import { externalApi } from '@/app/api/external'
 
 export default async function Home() {
   const conversations = await externalApi.getConversations()
