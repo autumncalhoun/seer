@@ -15,7 +15,7 @@ interface GetConversationsParams {
   'filter[user_id]'?: string
 }
 
-interface GetConversationsResponse extends PaginatedResponse {
+export interface GetConversationsResponse extends PaginatedResponse {
   conversations: Conversation[]
 }
 
@@ -104,7 +104,9 @@ interface GetPoliciesResponse extends PaginatedResponse {
   policies: Policy[]
 }
 
-function buildQuery(params: Record<string, string | number | undefined>): string {
+function buildQuery(
+  params: Record<string, string | number | undefined>,
+): string {
   const search = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined) search.set(k, String(v))
@@ -118,12 +120,26 @@ export const externalApi = {
     page = 1,
     limit = 100,
     'filter[user_id]': userId,
-  }: GetConversationsParams = {}): Promise<Conversation[]> => {
+  }: GetConversationsParams = {}): Promise<GetConversationsResponse> => {
+    const response = await externalApi.getConversationsPaginated({
+      page,
+      limit,
+      'filter[user_id]': userId,
+    })
+    return response
+  },
+
+  getConversationsPaginated: async ({
+    page = 1,
+    limit = 100,
+    'filter[user_id]': userId,
+  }: GetConversationsParams = {}): Promise<GetConversationsResponse> => {
     const params: Record<string, string | number | undefined> = { page, limit }
     if (userId) params['filter[user_id]'] = userId
-    const res = await fetch(`${BASE_URL}/api/conversations${buildQuery(params)}`)
-    const data: GetConversationsResponse = await res.json()
-    return data.conversations
+    const res = await fetch(
+      `${BASE_URL}/api/conversations${buildQuery(params)}`,
+    )
+    return res.json()
   },
 
   getConversation: async (id: string): Promise<Conversation> => {
@@ -150,12 +166,12 @@ export const externalApi = {
 
   getPrompt: async (
     id: string,
-    options?: { include?: 'llm_responses' }
+    options?: { include?: 'llm_responses' },
   ): Promise<Prompt> => {
     const params: Record<string, string | undefined> = {}
     if (options?.include) params.include = options.include
     const res = await fetch(
-      `${BASE_URL}/api/prompts/${id}${buildQuery(params)}`
+      `${BASE_URL}/api/prompts/${id}${buildQuery(params)}`,
     )
     const data: Prompt = await res.json()
     return data
@@ -184,7 +200,7 @@ export const externalApi = {
     limit = 100,
   }: GetPoliciesParams = {}): Promise<Policy[]> => {
     const res = await fetch(
-      `${BASE_URL}/api/policies${buildQuery({ page, limit })}`
+      `${BASE_URL}/api/policies${buildQuery({ page, limit })}`,
     )
     const data: GetPoliciesResponse = await res.json()
     return data.policies
