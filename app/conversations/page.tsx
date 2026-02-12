@@ -9,6 +9,7 @@ import {
 
 import { Heading } from '@/components/ui/heading'
 import { SeerPagination } from '@/components/seer-pagination'
+import { UserDisplay } from '@/components/user-display'
 import { externalApi } from '@/app/api/external'
 
 const PAGE_SIZE = 50
@@ -33,7 +34,7 @@ export default async function Conversations({
         <TableHeader>
           <TableRow>
             <TableHead>Title</TableHead>
-            <TableHead>User ID</TableHead>
+            <TableHead>User</TableHead>
             <TableHead>Created</TableHead>
             <TableHead>Updated</TableHead>
           </TableRow>
@@ -42,7 +43,9 @@ export default async function Conversations({
           {conversations.map((c) => (
             <TableRow key={c.id}>
               <TableCell>{c.title || '(Untitled)'}</TableCell>
-              <TableCell>{c.user_id}</TableCell>
+              <TableCell>
+                <UserDisplay userId={c.user_id} />
+              </TableCell>
               <TableCell>{new Date(c.created).toLocaleString()}</TableCell>
               <TableCell>{new Date(c.updated).toLocaleString()}</TableCell>
             </TableRow>

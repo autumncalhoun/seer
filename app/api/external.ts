@@ -187,6 +187,9 @@ export const externalApi = {
     const params: Record<string, string | number | undefined> = { page, limit }
     if (vip !== undefined) params['filter[vip]'] = vip
     const res = await fetch(`${BASE_URL}/api/users${buildQuery(params)}`)
+    if (!res.ok) {
+      throw new Error(`Failed to fetch 'GET /api/users': ${res.statusText}`)
+    }
     const data: GetUsersResponse = await res.json()
     return data.users
   },
