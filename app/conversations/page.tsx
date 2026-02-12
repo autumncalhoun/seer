@@ -30,6 +30,7 @@ export default async function Conversations({
     limit: PAGE_SIZE,
     'filter[user_id]': userId,
   })
+  const totalPages = Math.ceil(total / PAGE_SIZE) || 1
 
   return (
     <div className="p-6">
@@ -61,16 +62,16 @@ export default async function Conversations({
           ))}
         </TableBody>
       </Table>
-      {total > 1 && (
+      {totalPages > 1 && (
         <SeerPagination
-          totalPages={total}
+          totalPages={totalPages}
           currentPage={page}
           getPageHref={(p) => {
-          const params = new URLSearchParams()
-          params.set('page', String(p))
-          if (userId) params.set('user_id', userId)
-          return `/conversations?${params}`
-        }}
+            const params = new URLSearchParams()
+            params.set('page', String(p))
+            if (userId) params.set('user_id', userId)
+            return `/conversations?${params}`
+          }}
           className="mt-4"
         />
       )}

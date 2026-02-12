@@ -159,16 +159,15 @@ export const externalApi = {
     'filter[conversation_id]': conversationId,
     'filter[policy_id]': policyId,
     include,
-  }: GetPromptsParams = {}): Promise<Prompt[]> => {
+  }: GetPromptsParams = {}): Promise<GetPromptsResponse> => {
     const params: Record<string, string | number | undefined> = { page, limit }
     if (conversationId) params['filter[conversation_id]'] = conversationId
     if (policyId) params['filter[policy_id]'] = policyId
     if (include) params.include = include
     const res = await fetch(`${BASE_URL}/api/prompts${buildQuery(params)}`)
     const data: GetPromptsResponse = await res.json()
-    const prompts = data.prompts
     if (include === 'llm_responses') {
-      for (const p of prompts) {
+      for (const p of data.prompts) {
         if (p.llm_responses) {
           p.llm_responses = p.llm_responses.map((lr) => {
             let output = lr.output
@@ -184,7 +183,7 @@ export const externalApi = {
         }
       }
     }
-    return prompts
+    return data
   },
 
   getPrompt: async (
@@ -214,6 +213,55 @@ export const externalApi = {
       })
     }
     return data
+  },
+
+  getRiskyPrompts: async () => {
+    const pageSize = 100
+    const { total } = await externalApi.getPrompts({
+      page: 1,
+      limit: 1,
+    })
+    const totalPages = Math.ceil(total / pageSize) || 1
+    const pagePromises = Array.from({ length: totalPages }, (_, i) =>
+      externalApi.getPrompts({
+        page: i + 1,
+        limit: pageSize,
+        include: 'llm_responses',
+      }),
+    )
+    const results = await Promise.all(pagePromises)
+    const riskyPrompts = new Map<string, Prompt>()
+    const riskyResponses = new Map<string, LlmResponse>()
+    const riskyConversations = new Set<string>()
+    const riskyUsers = new Map<string, number>()
+    results.forEach(({ prompts }) => {
+      prompts.forEach((p) => {
+        if (p.risk_score >= 3) {
+          riskyPrompts.set(p.id, p)
+          p.llm_responses?.forEach((lr) => {
+            riskyResponses.set(lr.id, lr)
+            riskyConversations.add(p.conversation_id)
+          })
+          riskyConversations.add(p.conversation_id)
+        }
+      })
+    })
+
+    const conversationPromises = Array.from(riskyConversations).map(
+      (conversationId) => externalApi.getConversation(conversationId),
+    )
+    const conversations = await Promise.all(conversationPromises)
+    conversations.forEach((conversation) => {
+      riskyUsers.set(
+        conversation.user_id,
+        (riskyUsers.get(conversation.user_id) || 0) + 1,
+      )
+    })
+    return {
+      promptsCount: riskyPrompts.size,
+      users: Array.from(riskyUsers.entries()).sort((a, b) => b[1] - a[1]),
+      responsesCount: riskyResponses.size,
+    }
   },
 
   getUsers: async ({
