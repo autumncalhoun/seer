@@ -30,6 +30,20 @@ export interface Conversation {
 }
 
 // Prompts & LLM responses
+
+export interface LlmResponseOutput {
+  type: string
+  id: string
+  status: string
+  role: string
+  content: Content[]
+}
+
+export interface Content {
+  type: string
+  text: string
+  annotations: any[]
+}
 export interface LlmResponse {
   id: string
   conversation_id: string
@@ -39,7 +53,7 @@ export interface LlmResponse {
   risk_score: number
   action: 'none' | 'blocked'
   policy_id: string
-  output: string | null
+  output: string | null | LlmResponseOutput[] // JSON string that gets transformed into an object
   created: string
   updated: string
 }
@@ -123,25 +137,14 @@ export const externalApi = {
     limit = 100,
     'filter[user_id]': userId,
   }: GetConversationsParams = {}): Promise<GetConversationsResponse> => {
-    const response = await externalApi.getConversationsPaginated({
-      page,
-      limit,
-      'filter[user_id]': userId,
-    })
-    return response
-  },
-
-  getConversationsPaginated: async ({
-    page = 1,
-    limit = 100,
-    'filter[user_id]': userId,
-  }: GetConversationsParams = {}): Promise<GetConversationsResponse> => {
     const params: Record<string, string | number | undefined> = { page, limit }
+    // TODO: This is not filtering as expected or I'm doing something wrong
     if (userId) params['filter[user_id]'] = userId
     const res = await fetch(
       `${BASE_URL}/api/conversations${buildQuery(params)}`,
     )
-    return res.json()
+    const data: GetConversationsResponse = await res.json()
+    return data
   },
 
   getConversation: async (id: string): Promise<Conversation> => {
@@ -163,7 +166,25 @@ export const externalApi = {
     if (include) params.include = include
     const res = await fetch(`${BASE_URL}/api/prompts${buildQuery(params)}`)
     const data: GetPromptsResponse = await res.json()
-    return data.prompts
+    const prompts = data.prompts
+    if (include === 'llm_responses') {
+      for (const p of prompts) {
+        if (p.llm_responses) {
+          p.llm_responses = p.llm_responses.map((lr) => {
+            let output = lr.output
+            if (typeof output === 'string' && output) {
+              try {
+                output = JSON.parse(output)
+              } catch {
+                /* keep string */
+              }
+            }
+            return { ...lr, output }
+          })
+        }
+      }
+    }
+    return prompts
   },
 
   getPrompt: async (
@@ -176,6 +197,22 @@ export const externalApi = {
       `${BASE_URL}/api/prompts/${id}${buildQuery(params)}`,
     )
     const data: Prompt = await res.json()
+    if (options?.include === 'llm_responses' && data.llm_responses) {
+      data.llm_responses = data.llm_responses.map((llm_response) => {
+        const raw = llm_response.output
+        const output =
+          typeof raw === 'string' && raw
+            ? (() => {
+                try {
+                  return JSON.parse(raw)
+                } catch {
+                  return raw
+                }
+              })()
+            : raw
+        return { ...llm_response, output }
+      })
+    }
     return data
   },
 
