@@ -7,6 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
+import { Heading } from '@/components/ui/heading'
 import { SeerPagination } from '@/components/seer-pagination'
 import { externalApi } from '@/app/api/external'
 
@@ -27,7 +28,7 @@ export default async function Conversations({
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Conversations</h1>
+      <Heading level={1}>Conversations</Heading>
       <Table>
         <TableHeader>
           <TableRow>

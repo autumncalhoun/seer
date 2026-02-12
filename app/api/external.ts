@@ -1,3 +1,5 @@
+// AI Generated to create original API calls and corresponding types. Tweaked by hand to be more clear
+
 const BASE_URL = 'https://frontend-takehome.fly.dev'
 
 // Shared pagination
@@ -198,12 +200,12 @@ export const externalApi = {
   getPolicies: async ({
     page = 1,
     limit = 100,
-  }: GetPoliciesParams = {}): Promise<Policy[]> => {
+  }: GetPoliciesParams = {}): Promise<GetPoliciesResponse> => {
     const res = await fetch(
       `${BASE_URL}/api/policies${buildQuery({ page, limit })}`,
     )
-    const data: GetPoliciesResponse = await res.json()
-    return data.policies
+    const data = await res.json()
+    return data
   },
 
   getPolicy: async (id: string): Promise<Policy> => {
