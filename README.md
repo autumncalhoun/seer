@@ -16,7 +16,8 @@
 
 - Next.js (server and client)
 - Tailwind (general CSS)
-- Chakra UI (ain't nobody got time to make a dropdown right now!)
+- ~~Chakra UI~~ Shadcn (ain't nobody got time to make a dropdown right now!)
+  - Chakra was turning into a real yak shaving experiment. It's not important right now, so I just picked another lib
 - Github repo + Vercel deployments
 
 ## Run locally
