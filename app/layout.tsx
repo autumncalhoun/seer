@@ -2,8 +2,10 @@ import './globals.css'
 
 import { Geist, Geist_Mono } from 'next/font/google'
 
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import type { Metadata } from 'next'
-import { Provider } from '@/components/ui/provider'
+import NavLink from '@/components/nav-link'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -28,8 +30,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Provider>{children}</Provider>
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50 p-4`}>
+        <header className="flex gap-2 mb-4">
+          <NavLink href="/dashboard">Dashboard</NavLink>
+          <NavLink href="/conversations">Conversations</NavLink>
+          <NavLink href="/policies">Policies</NavLink>
+        </header>
+        <div className="flex flex-col min-h-screen rounded-lg bg-white p-4 shadow">
+          <main className="flex-1">{children}</main>
+        </div>
       </body>
     </html>
   )
