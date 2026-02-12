@@ -37,7 +37,9 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50 p-4`}>
         <header className="flex gap-2 mb-4">
-          <NavLink href="/dashboard">Dashboard</NavLink>
+          <NavLink prefetch={false} href="/dashboard">
+            Dashboard
+          </NavLink>
           <NavLink href="/conversations">Conversations</NavLink>
           <NavLink href="/policies">Policies</NavLink>
         </header>
