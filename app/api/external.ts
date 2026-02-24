@@ -232,6 +232,7 @@ export const externalApi = {
     const results = await Promise.all(pagePromises)
     const riskyPrompts = new Map<string, Prompt>()
     const riskyResponses = new Map<string, LlmResponse>()
+
     const riskyConversations = new Set<string>()
     const riskyUsers = new Map<string, number>()
     results.forEach(({ prompts }) => {
@@ -300,5 +301,36 @@ export const externalApi = {
     const res = await fetch(`${BASE_URL}/api/policies/${id}`)
     const data: Policy = await res.json()
     return data
+  },
+
+  getAnalytics: async () => {
+    const modelUsage = {
+      'gpt-4o': {
+        percentage: 0.42,
+        rawCount: 1267,
+        label: 'GPT-4o',
+      },
+      'gpt-4o-mini': {
+        percentage: 0.28,
+        rawCount: 845,
+        label: 'GPT-4o Mini',
+      },
+      'gpt-3.5-turbo': {
+        percentage: 0.18,
+        rawCount: 543,
+        label: 'GPT-3.5 Turbo',
+      },
+      'claude-3-5-sonnet': {
+        percentage: 0.08,
+        rawCount: 241,
+        label: 'Claude 3.5 Sonnet',
+      },
+      'claude-3-opus': {
+        percentage: 0.04,
+        rawCount: 121,
+        label: 'Claude 3 Opus',
+      },
+    }
+    return { modelUsage }
   },
 }
